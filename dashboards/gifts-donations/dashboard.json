@@ -1,0 +1,31 @@
+{
+  "meta": { "title": "Gifts & Donations Dashboard" },
+  "params": { "vtype": "", "ou": "" },
+  "datasets": {
+    "gifts_lines": {
+      "title": "Gifts & donations spend lines",
+      "description": "Spend and line counts from Incorta's BSGiftsDonations business view, by invoice date, vendor, vendor type and operating unit.",
+      "source": {
+        "kind": "call",
+        "connector": "Incorta MCP",
+        "tool": "query_business_view",
+        "args": {
+          "query": {
+            "measures": [
+              { "field": "BSGiftsDonations.New_View.inv_dist_amount", "label": "amount", "aggregation": "sum" },
+              { "field": "BSGiftsDonations.New_View.inv_dist_amount", "label": "lines", "aggregation": "count" }
+            ],
+            "rows": [
+              "BSGiftsDonations.New_View.invoice_date",
+              "BSGiftsDonations.New_View.vendor_name",
+              "BSGiftsDonations.New_View.vendor_type",
+              "BSGiftsDonations.New_View.ou_name"
+            ],
+            "aggregate": true,
+            "page_size": 1000
+          }
+        }
+      }
+    }
+  }
+}

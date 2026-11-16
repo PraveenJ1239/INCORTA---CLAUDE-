@@ -1,0 +1,429 @@
+<meta name="dash-one-writer">
+<style>
+  .gd { display: flex; flex-direction: column; gap: var(--cds-gap-lg); font-family: var(--font-anthropic-sans); color: var(--color-fg); }
+  .gd-head h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0 0 var(--cds-gap-xs); }
+  .gd-take { margin: 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-body); max-width: 70ch; }
+  .gd-take b { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+  .gd-filters { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); align-items: end; }
+  .gd-filters label { display: flex; flex-direction: column; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .gd-reset { font: inherit; font-size: var(--cds-font-size-caption); background: none; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); color: var(--color-fg); padding: 6px 12px; cursor: pointer; }
+  .gd-reset:disabled { opacity: .4; cursor: default; }
+  .gd-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--cds-gap-md); }
+  .gd-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); min-width: 0; }
+  .gd-kpi-l { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0 0 var(--cds-gap-xs); }
+  .gd-kpi-v { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; line-height: 1.15; overflow-wrap: anywhere; }
+  .gd-kpi-s { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: var(--cds-gap-xs) 0 0; }
+  .gd-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--cds-gap-md); }
+  .gd-stack { display: grid; grid-template-columns: 1fr; gap: var(--cds-gap-md); }
+  .gd-card h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0 0 var(--cds-gap-xs); }
+  .gd-sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0 0 var(--cds-gap-md); }
+  .gd-chart { position: relative; min-height: 120px; }
+  .gd-chart.gd-tall { min-height: 240px; }
+  .gd-chart svg { display: block; overflow: visible; }
+  .gd-lbl { font-size: var(--cds-font-size-caption); fill: var(--color-fg); }
+  .gd-val { font-size: var(--cds-font-size-caption); fill: var(--cds-text-secondary); font-variant-numeric: tabular-nums; }
+  .gd-axis text { font-size: var(--cds-font-size-caption); fill: var(--cds-text-secondary); font-family: var(--font-anthropic-sans); font-variant-numeric: tabular-nums; }
+  .gd-axis line, .gd-axis path { stroke: none; }
+  .gd-gridline { stroke: var(--cds-chart-grid); stroke-width: 1; }
+  .gd-base { stroke: var(--cds-chart-axis); stroke-width: 1; }
+  .gd-hit { fill: transparent; cursor: default; }
+  .gd-hit:hover { fill: var(--cds-chart-grid); fill-opacity: .35; }
+  .gd-tip { position: absolute; display: none; pointer-events: none; z-index: 5; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); border-radius: var(--cds-radius); padding: 6px 10px; font-size: var(--cds-font-size-caption); color: var(--cds-text-secondary); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .gd-tip-h { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+  .gd-msg { padding: var(--cds-pad-md) 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); min-height: 1.5em; }
+  .gd-tablewrap { overflow-x: auto; }
+  .gd-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-body); }
+  .gd-table th { text-align: left; font-weight: var(--cds-font-weight-medium); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+  .gd-table td { padding: 8px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+  .gd-table .gd-num { text-align: right; font-variant-numeric: tabular-nums; }
+  .gd-table tr:last-child td { border-bottom: none; }
+  .gd-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .gd-note summary { cursor: pointer; }
+  .gd-note p { margin: var(--cds-gap-xs) 0 0; max-width: 75ch; }
+</style>
+
+<div class="gd" id="gifts-dashboard">
+  <header class="gd-head" id="overview">
+    <h1>Gifts &amp; Donations</h1>
+    <p class="gd-take"><b data-draw="top_vendor" data-source="kpis" data-field="top_vendor" data-row="0">—</b> accounts for <b data-draw="top_share" data-source="kpis" data-field="top_share" data-row="0">—</b> of the <b data-draw="total_inline" data-source="kpis" data-field="total" data-row="0">—</b> in gifts and donations spend for this selection.</p>
+  </header>
+
+  <div class="gd-filters" id="filters">
+    <label>Vendor type
+      <select class="dash-select" data-draw="vtype_select" aria-label="Vendor type" data-source="gifts_lines"></select>
+    </label>
+    <label>Operating unit
+      <select class="dash-select" data-draw="ou_select" aria-label="Operating unit" data-source="gifts_lines"></select>
+    </label>
+    <button type="button" class="gd-reset" id="gd-reset">Clear filters</button>
+  </div>
+
+  <section class="gd-kpis" id="kpis">
+    <div class="gd-card" id="kpi-total">
+      <p class="gd-kpi-l">Total spend</p>
+      <p class="gd-kpi-v" data-draw="kpi_total" data-source="kpis" data-field="total" data-row="0">—</p>
+      <p class="gd-kpi-s">Sum of invoice distribution amounts, all years</p>
+    </div>
+    <div class="gd-card" id="kpi-lines">
+      <p class="gd-kpi-l">Invoice lines</p>
+      <p class="gd-kpi-v" data-draw="kpi_lines" data-source="kpis" data-field="lines" data-row="0">—</p>
+      <p class="gd-kpi-s">Distribution lines booked</p>
+    </div>
+    <div class="gd-card" id="kpi-vendors">
+      <p class="gd-kpi-l">Vendors</p>
+      <p class="gd-kpi-v" data-draw="kpi_vendors" data-source="kpis" data-field="vendors" data-row="0">—</p>
+      <p class="gd-kpi-s">With at least one line</p>
+    </div>
+    <div class="gd-card" id="kpi-avg">
+      <p class="gd-kpi-l">Average per line</p>
+      <p class="gd-kpi-v" data-draw="kpi_avg" data-source="kpis" data-field="avg_line" data-row="0">—</p>
+      <p class="gd-kpi-s">Total spend ÷ invoice lines</p>
+    </div>
+  </section>
+
+  <section class="gd-card" id="spend-by-year">
+    <h2>Spend by invoice year</h2>
+    <p class="gd-sub">Net distribution amount, by year of invoice date</p>
+    <div class="gd-chart gd-tall" data-draw="year_chart" data-source="by_year_f" aria-label="Column chart of gifts and donations spend by invoice year"></div>
+  </section>
+
+  <div class="gd-grid2">
+    <section class="gd-card" id="spend-by-vendor">
+      <h2>Spend by vendor</h2>
+      <p class="gd-sub">Largest first</p>
+      <div class="gd-chart" data-draw="vendor_chart" data-source="by_vendor_f" aria-label="Bar chart of spend by vendor"></div>
+    </section>
+    <div class="gd-stack">
+      <section class="gd-card" id="spend-by-ou">
+        <h2>Spend by operating unit</h2>
+        <div class="gd-chart" data-draw="ou_chart" data-source="by_ou_f" aria-label="Bar chart of spend by operating unit"></div>
+      </section>
+      <section class="gd-card" id="spend-by-type">
+        <h2>Spend by vendor type</h2>
+        <div class="gd-chart" data-draw="type_chart" data-source="by_type_f" aria-label="Bar chart of spend by vendor type"></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="gd-card" id="vendor-table">
+    <h2>Vendor detail</h2>
+    <div class="gd-tablewrap">
+      <table class="gd-table" data-source="by_vendor_f" data-row-key="vendor_name">
+        <thead><tr>
+          <th data-field="vendor_name">Vendor</th>
+          <th data-field="vendor_type">Type</th>
+          <th data-field="lines" class="gd-num">Lines</th>
+          <th data-field="amount" class="gd-num">Spend</th>
+          <th data-field="share" class="gd-num">Share</th>
+        </tr></thead>
+        <tbody data-draw="vendor_rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <details class="gd-note" id="notes">
+    <summary>About these numbers</summary>
+    <p>Spend is the sum of invoice distribution amounts (Inv Dist Amount) from Incorta's BSGiftsDonations business view. Invoice Amount isn't added up, because it repeats on every distribution line of an invoice. Some lines are reversals, so a vendor or year can net to less than its gross bookings. All rows are country AMERICA; the view's HCP classification, reportable supplier and department fields are empty, so they aren't shown.</p>
+  </details>
+</div>
+
+<script>
+  dash.loader('gifts_lines', {
+    description: "Turns Incorta's header and row arrays into one object per row: amounts and line counts as numbers, the date trimmed to YYYY-MM-DD, and a blank vendor type shown as \"(blank)\".",
+    fn: ({answer}) => {
+      if (!answer || !Array.isArray(answer.headers) || !Array.isArray(answer.rows)) {
+        throw new Error((answer && (answer.error?.message || answer.error || answer.message)) || 'Unexpected answer from Incorta');
+      }
+      const headers = answer.headers;
+      const data = answer.rows.map((cells) => {
+        const row = {};
+        headers.forEach((h, i) => { row[h] = cells[i]; });
+        row.amount = Number(row.amount);
+        row.lines = Number(row.lines);
+        row.invoice_date = row.invoice_date == null ? null : String(row.invoice_date).slice(0, 10);
+        if (row.vendor_type == null || row.vendor_type === '') row.vendor_type = '(blank)';
+        return row;
+      });
+      return {data, columns: headers, truncated: !!answer.hasMore};
+    }
+  });
+
+  dash.calc('kpis', {
+    inputs: ['gifts_lines'],
+    title: 'Headline figures',
+    description: 'Total spend, invoice lines, vendor count, average per line and the top vendor, for the chosen vendor type and operating unit.',
+    fn: (lines) => {
+      const p = dash.params();
+      const rows = lines.filter((r) => (!p.vtype || r.vendor_type === p.vtype) && (!p.ou || r.ou_name === p.ou));
+      const total = Math.round(d3.sum(rows, (r) => r.amount) * 100) / 100;
+      const count = d3.sum(rows, (r) => r.lines);
+      const byVendor = d3.rollups(rows, (v) => d3.sum(v, (r) => r.amount), (r) => r.vendor_name).sort((a, b) => b[1] - a[1]);
+      const top = byVendor[0];
+      return [{
+        total,
+        lines: count,
+        vendors: byVendor.length,
+        avg_line: count ? Math.round((total / count) * 100) / 100 : 0,
+        top_vendor: top ? top[0] : null,
+        top_share: top && total ? Math.round((top[1] / total) * 1000) / 1000 : 0
+      }];
+    }
+  });
+
+  dash.calc('by_vendor_f', {
+    inputs: ['gifts_lines'],
+    title: 'Spend by vendor',
+    description: 'Spend, lines and share of total for each vendor, for the chosen filters.',
+    fn: (lines) => {
+      const p = dash.params();
+      const rows = lines.filter((r) => (!p.vtype || r.vendor_type === p.vtype) && (!p.ou || r.ou_name === p.ou));
+      const total = d3.sum(rows, (r) => r.amount);
+      return d3.rollups(rows, (v) => ({
+        vendor_type: Array.from(new Set(v.map((r) => r.vendor_type))).join(', '),
+        lines: d3.sum(v, (r) => r.lines),
+        amount: Math.round(d3.sum(v, (r) => r.amount) * 100) / 100
+      }), (r) => r.vendor_name)
+        .map(([vendor_name, o]) => ({vendor_name, vendor_type: o.vendor_type, lines: o.lines, amount: o.amount, share: total ? Math.round((o.amount / total) * 1000) / 1000 : 0}))
+        .sort((a, b) => b.amount - a.amount);
+    }
+  });
+
+  dash.calc('by_year_f', {
+    inputs: ['gifts_lines'],
+    title: 'Spend by invoice year',
+    description: 'Spend per year of invoice date, for the chosen filters; years with no lines show as zero.',
+    fn: (lines) => {
+      const p = dash.params();
+      const years = lines.map((r) => Number(String(r.invoice_date).slice(0, 4))).filter((y) => y > 1900);
+      if (!years.length) return [];
+      const rows = lines.filter((r) => (!p.vtype || r.vendor_type === p.vtype) && (!p.ou || r.ou_name === p.ou));
+      const sums = d3.rollup(rows, (v) => d3.sum(v, (r) => r.amount), (r) => Number(String(r.invoice_date).slice(0, 4)));
+      return d3.range(d3.min(years), d3.max(years) + 1).map((y) => ({year: String(y), amount: Math.round((sums.get(y) || 0) * 100) / 100}));
+    }
+  });
+
+  dash.calc('by_ou_f', {
+    inputs: ['gifts_lines'],
+    title: 'Spend by operating unit',
+    description: 'Spend per operating unit, for the chosen filters.',
+    fn: (lines) => {
+      const p = dash.params();
+      const rows = lines.filter((r) => (!p.vtype || r.vendor_type === p.vtype) && (!p.ou || r.ou_name === p.ou));
+      return d3.rollups(rows, (v) => Math.round(d3.sum(v, (r) => r.amount) * 100) / 100, (r) => r.ou_name)
+        .map(([ou_name, amount]) => ({ou_name, amount}))
+        .sort((a, b) => b.amount - a.amount);
+    }
+  });
+
+  dash.calc('by_type_f', {
+    inputs: ['gifts_lines'],
+    title: 'Spend by vendor type',
+    description: 'Spend per vendor type, for the chosen filters.',
+    fn: (lines) => {
+      const p = dash.params();
+      const rows = lines.filter((r) => (!p.vtype || r.vendor_type === p.vtype) && (!p.ou || r.ou_name === p.ou));
+      return d3.rollups(rows, (v) => Math.round(d3.sum(v, (r) => r.amount) * 100) / 100, (r) => r.vendor_type)
+        .map(([vendor_type, amount]) => ({vendor_type, amount}))
+        .sort((a, b) => b.amount - a.amount);
+    }
+  });
+</script>
+
+<script>
+  (function () {
+    const money = (v) => {
+      const a = Math.abs(v);
+      if (a >= 1e6) return '$' + d3.format('.2f')(v / 1e6) + 'M';
+      if (a >= 1e4) return '$' + d3.format('.0f')(v / 1e3) + 'K';
+      if (a >= 1e3) return '$' + d3.format('.1f')(v / 1e3) + 'K';
+      return '$' + d3.format(',.0f')(v);
+    };
+    const full = d3.format('$,.2f');
+    const pct = d3.format('.1%');
+    const int = d3.format(',');
+
+    function message(el, status, emptyText) {
+      el.replaceChildren();
+      const m = document.createElement('div');
+      if (status === 'error') { m.className = 'gd-msg'; m.textContent = 'Failed to load'; }
+      else if (status === 'ok') { m.className = 'gd-msg'; m.textContent = emptyText || 'No spend for this selection'; }
+      else { m.className = 'gd-msg dash-skeleton'; }
+      el.appendChild(m);
+    }
+
+    function makeTip(el) {
+      const t = document.createElement('div');
+      t.className = 'gd-tip';
+      el.appendChild(t);
+      return {
+        show(ev, lines) {
+          t.replaceChildren(...lines.map((s, i) => { const d = document.createElement('div'); d.textContent = s; if (i === 0) d.className = 'gd-tip-h'; return d; }));
+          t.style.display = 'block';
+          const r = el.getBoundingClientRect();
+          let x = ev.clientX - r.left + 12;
+          const y = ev.clientY - r.top + 12;
+          if (x + t.offsetWidth > r.width) x = Math.max(0, ev.clientX - r.left - t.offsetWidth - 12);
+          t.style.left = x + 'px';
+          t.style.top = y + 'px';
+        },
+        hide() { t.style.display = 'none'; }
+      };
+    }
+
+    function hPath(x0, x1, y, h) {
+      const w = x1 - x0;
+      if (w <= 0) return '';
+      const r = Math.min(4, w, h / 2);
+      return `M${x0},${y}H${x1 - r}Q${x1},${y} ${x1},${y + r}V${y + h - r}Q${x1},${y + h} ${x1 - r},${y + h}H${x0}Z`;
+    }
+    function vPath(x, w, yBase, yEnd) {
+      const h = Math.abs(yBase - yEnd);
+      if (h < 0.5) return '';
+      const r = Math.min(4, w / 2, h);
+      if (yEnd < yBase) return `M${x},${yBase}V${yEnd + r}Q${x},${yEnd} ${x + r},${yEnd}H${x + w - r}Q${x + w},${yEnd} ${x + w},${yEnd + r}V${yBase}Z`;
+      return `M${x},${yBase}V${yEnd - r}Q${x},${yEnd} ${x + r},${yEnd}H${x + w - r}Q${x + w},${yEnd} ${x + w},${yEnd - r}V${yBase}Z`;
+    }
+
+    // Horizontal bar chart: one row per item, label left, value at the bar's end.
+    window.gdHBar = function (el, srcId, key, tipLines) {
+      const s = dash.data(srcId);
+      if (s.status !== 'ok' || !Array.isArray(s.data) || !s.data.length) { message(el, s.status); return; }
+      const rows = s.data;
+      el.replaceChildren();
+      const W = Math.max(240, el.clientWidth || 300);
+      const bh = 18, gap = 12, top = 2;
+      const H = top + rows.length * (bh + gap) - gap + 2;
+      const svg = d3.select(el).append('svg').attr('width', W).attr('height', H)
+        .attr('role', 'img').attr('aria-label', el.getAttribute('aria-label') || '');
+      const labels = svg.append('g').selectAll('text').data(rows).join('text')
+        .attr('class', 'gd-lbl').attr('x', 0).attr('y', (d, i) => top + i * (bh + gap) + bh / 2).attr('dy', '0.35em')
+        .text((d) => d[key]);
+      let lw = 0;
+      labels.each(function () { lw = Math.max(lw, this.getComputedTextLength()); });
+      const maxLw = W * 0.4;
+      if (lw > maxLw) {
+        labels.each(function (d) {
+          let t = String(d[key]);
+          while (this.getComputedTextLength() > maxLw && t.length > 4) { t = t.slice(0, -1); this.textContent = t + '…'; }
+        });
+        lw = maxLw;
+      }
+      const vals = svg.append('g').selectAll('text').data(rows).join('text').attr('class', 'gd-val').text((d) => money(d.amount));
+      let vw = 0;
+      vals.each(function () { vw = Math.max(vw, this.getComputedTextLength()); });
+      const x0 = lw + 12, x1 = Math.max(x0 + 40, W - vw - 8);
+      const x = d3.scaleLinear().domain([0, d3.max(rows, (d) => Math.max(0, d.amount)) || 1]).range([x0, x1]);
+      svg.insert('g', ':first-child').selectAll('path').data(rows).join('path')
+        .attr('d', (d, i) => hPath(x0, x(Math.max(0, d.amount)), top + i * (bh + gap), bh))
+        .style('fill', dash.colors[0]);
+      vals.attr('x', (d) => x(Math.max(0, d.amount)) + 6).attr('y', (d, i) => top + i * (bh + gap) + bh / 2).attr('dy', '0.35em');
+      const tip = makeTip(el);
+      svg.append('g').selectAll('rect').data(rows).join('rect').attr('class', 'gd-hit')
+        .attr('x', 0).attr('width', W).attr('y', (d, i) => top + i * (bh + gap) - gap / 2).attr('height', bh + gap)
+        .on('pointermove', (ev, d) => tip.show(ev, tipLines(d)))
+        .on('pointerleave', () => tip.hide());
+    };
+
+    window.gdFmt = {money, full, pct, int, message, makeTip, vPath};
+  })();
+</script>
+
+<script>
+  (function () {
+    const F = window.gdFmt;
+
+    // Filters: page-only choices, never sent to Incorta.
+    function fillSelect(sel, field, param, allLabel) {
+      const g = dash.data('gifts_lines');
+      const opts = g.status === 'ok' ? Array.from(new Set(g.data.map((r) => r[field]))).filter((v) => v != null).sort() : [];
+      sel.replaceChildren(new Option(allLabel, ''), ...opts.map((v) => new Option(v, v)));
+      sel.value = dash.params()[param] || '';
+      sel.onchange = () => dash.setParams({[param]: sel.value || ''});
+    }
+    dash.draw('vtype_select', (sel) => fillSelect(sel, 'vendor_type', 'vtype', 'All vendor types'));
+    dash.draw('ou_select', (sel) => fillSelect(sel, 'ou_name', 'ou', 'All operating units'));
+    dash.onData(() => {
+      const p = dash.params();
+      document.querySelectorAll('#gd-reset').forEach((b) => { b.disabled = !p.vtype && !p.ou; });
+    });
+    document.querySelectorAll('#gd-reset').forEach((b) => b.addEventListener('click', () => dash.setParams({vtype: '', ou: ''})));
+
+    // Headline figures
+    function kpi(name, field, fmt) {
+      dash.draw(name, (el) => {
+        const k = dash.data('kpis');
+        const row = k.status === 'ok' && Array.isArray(k.data) ? k.data[0] : null;
+        el.classList.toggle('dash-skeleton', k.status === 'loading');
+        el.textContent = row && row[field] != null ? fmt(row[field]) : '—';
+      });
+    }
+    kpi('kpi_total', 'total', F.money);
+    kpi('kpi_lines', 'lines', F.int);
+    kpi('kpi_vendors', 'vendors', F.int);
+    kpi('kpi_avg', 'avg_line', F.full);
+    kpi('top_vendor', 'top_vendor', (v) => v);
+    kpi('top_share', 'top_share', F.pct);
+    kpi('total_inline', 'total', F.money);
+
+    // Spend by year: columns from a zero baseline.
+    dash.draw('year_chart', (el) => {
+      const s = dash.data('by_year_f');
+      if (s.status !== 'ok' || !Array.isArray(s.data) || !s.data.length) { F.message(el, s.status); return; }
+      const rows = s.data;
+      el.replaceChildren();
+      const W = Math.max(260, el.clientWidth || 300), H = 240, mb = 24, mt = 8;
+      const lo = Math.min(0, d3.min(rows, (d) => d.amount)), hi = Math.max(0, d3.max(rows, (d) => d.amount)) || 1;
+      const y = d3.scaleLinear().domain([lo, hi]).nice().range([H - mb, mt]);
+      const svg = d3.select(el).append('svg').attr('width', W).attr('height', H)
+        .attr('role', 'img').attr('aria-label', el.getAttribute('aria-label') || '');
+      const ticks = y.ticks(4);
+      const ax = svg.append('g').attr('class', 'gd-axis').call(d3.axisLeft(y).tickValues(ticks).tickFormat(F.money).tickSize(0).tickPadding(0));
+      let ml = 0;
+      ax.selectAll('text').each(function () { ml = Math.max(ml, this.getComputedTextLength()); });
+      ml += 8;
+      ax.attr('transform', `translate(${ml - 8},0)`);
+      svg.insert('g', ':first-child').selectAll('line').data(ticks).join('line').attr('class', 'gd-gridline')
+        .attr('x1', ml).attr('x2', W).attr('y1', (d) => y(d)).attr('y2', (d) => y(d));
+      const x = d3.scaleBand().domain(rows.map((d) => d.year)).range([ml + 4, W]).paddingInner(0.25).paddingOuter(0.1);
+      svg.append('g').selectAll('path').data(rows).join('path')
+        .attr('d', (d) => F.vPath(x(d.year), x.bandwidth(), y(0), y(d.amount)))
+        .style('fill', dash.colors[0]);
+      svg.append('line').attr('class', 'gd-base').attr('x1', ml).attr('x2', W).attr('y1', y(0)).attr('y2', y(0));
+      // Year labels: skip some so they never meet.
+      const probe = svg.append('text').attr('class', 'gd-lbl').text('2000');
+      const lblW = probe.node().getComputedTextLength() + 6;
+      probe.remove();
+      const every = Math.max(1, Math.ceil(lblW / x.step()));
+      svg.append('g').attr('class', 'gd-axis').selectAll('text').data(rows.filter((d, i) => i % every === 0)).join('text')
+        .attr('x', (d) => x(d.year) + x.bandwidth() / 2).attr('y', H - 6).attr('text-anchor', 'middle').text((d) => d.year);
+      const tip = F.makeTip(el);
+      svg.append('g').selectAll('rect').data(rows).join('rect').attr('class', 'gd-hit')
+        .attr('x', (d) => x(d.year) - (x.step() - x.bandwidth()) / 2).attr('width', x.step())
+        .attr('y', mt).attr('height', H - mb - mt)
+        .on('pointermove', (ev, d) => tip.show(ev, [d.year, F.full(d.amount)]))
+        .on('pointerleave', () => tip.hide());
+    });
+
+    dash.draw('vendor_chart', (el) => {
+      window.gdHBar(el, 'by_vendor_f', 'vendor_name', (d) => [d.vendor_name, F.full(d.amount), `${F.pct(d.share)} of spend · ${F.int(d.lines)} lines`]);
+    });
+    dash.draw('ou_chart', (el) => window.gdHBar(el, 'by_ou_f', 'ou_name', (d) => [d.ou_name, F.full(d.amount)]));
+    dash.draw('type_chart', (el) => window.gdHBar(el, 'by_type_f', 'vendor_type', (d) => [d.vendor_type, F.full(d.amount)]));
+
+    dash.draw('vendor_rows', (tb) => {
+      const s = dash.data('by_vendor_f');
+      tb.replaceChildren();
+      if (s.status !== 'ok' || !Array.isArray(s.data)) return;
+      s.data.forEach((r) => {
+        const tr = document.createElement('tr');
+        [[r.vendor_name, ''], [r.vendor_type, ''], [F.int(r.lines), 'gd-num'], [F.full(r.amount), 'gd-num'], [F.pct(r.share), 'gd-num']].forEach(([v, c]) => {
+          const td = document.createElement('td');
+          td.textContent = v;
+          if (c) td.className = c;
+          tr.appendChild(td);
+        });
+        tb.appendChild(tr);
+      });
+    });
+  })();
+</script>
