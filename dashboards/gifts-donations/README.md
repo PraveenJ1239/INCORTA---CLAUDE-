@@ -11,6 +11,15 @@ Live version: https://claude.ai/artifact/2sJYUn11F6TdFSgX629KCq
 | `index.html` | The dashboard page: layout, styles, the loader, the calculations and the chart drawing code |
 | `dashboard.json` | The dashboard's title, filter defaults and its one live dataset (the Incorta query) |
 
+## Run it outside Claude
+
+```bash
+cd standalone && cp .env.example .env   # fill in your Incorta MCP URL and credentials
+node --env-file=.env server.js
+```
+
+Then open http://127.0.0.1:8787/?dashboard=gifts-donations. See [`standalone/README.md`](../../standalone/README.md).
+
 ## Data source
 
 One live query, run each time the dashboard is opened, with the viewer's own Incorta access:
